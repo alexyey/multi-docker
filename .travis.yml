@@ -1,0 +1,29 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t alexyey/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run alexyey/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t alexyey/multi-client ./client
+  - docker build -t alexyey/multi-nginx ./nginx
+  - docker build -t alexyey/multi-server ./server
+  - docker build -t alexyey/multi-worker ./worker
+
+# Log in to docker CLI
+
+  - echo "$DOCKER_PASSWORD" | docker login - u "$DOCKER_ID" --password-stdin
+
+# Take those images and push them to DockerHub
+
+  - docker push alexyey/multi-client
+  - docker push alexyey/multi-nginx
+  - docker push alexyey/multi-server
+  - docker push alexyey/multi-worker
+
+
+
